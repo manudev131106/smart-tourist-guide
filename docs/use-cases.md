@@ -152,3 +152,35 @@ The system detects that weather conditions have changed significantly and may af
 3. No suitable alternative is found within the available time and location.
 4. The system informs the tourist and recommends postponing or removing the affected destination.
 5. The tourist decides whether to modify the itinerary manually.
+
+# Use Case Specifications
+
+## UC-01: Register / Login
+
+**Primary Actor:** Tourist / User
+
+**Goal:**  
+Allow the user to create an account or securely log into the Smart Tourist Guide System.
+
+**Preconditions:**
+- The system is available.
+- The user has valid registration or login information.
+
+**Main Flow:**
+1. User opens the Register / Login page.
+2. User selects Register or Login.
+3. For registration, the user enters the required details.
+4. The system validates the information.
+5. The system creates the user account.
+6. For login, the system verifies the user's credentials.
+7. The system authenticates the user.
+8. The system displays the user's dashboard.
+
+**Alternative Flow:**
+- If the registration information is invalid, the system displays an error.
+- If the login credentials are incorrect, the system asks the user to try again.
+- If the account already exists, the system asks the user to log in instead.
+
+**Postconditions:**
+- The user is successfully registered or logged in.
+- The user can access the system's features.
