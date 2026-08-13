@@ -20,8 +20,6 @@ Provides weather forecast information.
 ### 6. Payment Gateway
 Processes payments for bookings.
 
-### 7. Scheduler
-Triggers scheduled tasks such as sending trip reminder emails.
 
 ---
 
@@ -41,7 +39,7 @@ Triggers scheduled tasks such as sending trip reminder emails.
 10. Book Trip Services (Hotel & Transport)
 11. Make Payment
 12. Rate & Review Places
-13. Send Trip Reminder Emails
+
 
 ### Administrator Use Cases
 
@@ -65,5 +63,3 @@ Triggers scheduled tasks such as sending trip reminder emails.
 - Payment Gateway
   - Process payments
 
-- Scheduler
-  - Trigger reminder emails
