@@ -1,0 +1,68 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Tourist / User" as Tourist
+actor "Administrator" as Admin
+
+actor "AI / LLM\nRecommendation Engine" as AI <<system>>
+actor "Map / Location\nAPI" as MapAPI <<system>>
+actor "Weather API" as WeatherAPI <<system>>
+actor "Payment Gateway" as Payment <<system>>
+actor "Scheduler\n(Daily Job)" as Scheduler <<time-triggered>>
+
+rectangle "Smart Tourist Guide & Trip Planner (Website)" {
+
+  usecase "Register / Login" as UC_Login
+  usecase "Search Destinations" as UC_Search
+  usecase "View Attraction Details" as UC_Details
+
+  usecase "Plan Trip Itinerary" as UC_Plan
+  usecase "Generate Itinerary" as UC_Generate
+  usecase "Optimize Budget & Route" as UC_Optimize
+
+  usecase "Dynamic Itinerary Adjustment" as UC_Dynamic
+  usecase "View Interactive Map & Directions" as UC_Map
+  usecase "Check Weather Forecast" as UC_Weather
+
+  usecase "Book Trip Services\n(Hotel & Transport)" as UC_Book
+  usecase "Make Payment" as UC_Payment
+  usecase "Rate & Review Places" as UC_Rate
+
+  usecase "Send Trip Reminder Emails" as UC_Reminder
+  usecase "Manage Destinations & Content" as UC_Content
+  usecase "Manage Users & Reviews" as UC_Users
+}
+
+' Tourist / User relationships
+Tourist --> UC_Login
+Tourist --> UC_Search
+Tourist --> UC_Details
+Tourist --> UC_Plan
+Tourist --> UC_Dynamic
+Tourist --> UC_Map
+Tourist --> UC_Weather
+Tourist --> UC_Book
+Tourist --> UC_Rate
+
+' Administrator relationships
+Admin --> UC_Content
+Admin --> UC_Users
+
+' External system relationships
+AI --> UC_Generate
+MapAPI --> UC_Map
+WeatherAPI --> UC_Weather
+Payment --> UC_Payment
+Scheduler --> UC_Reminder
+
+' Include relationships
+UC_Plan ..> UC_Generate : <<include>>
+UC_Generate ..> UC_Optimize : <<include>>
+UC_Book ..> UC_Payment : <<include>>
+
+' Extend relationship with guard condition
+UC_Dynamic ..> UC_Plan : <<extend>>\n[weather changes significantly]
+
+@enduml
