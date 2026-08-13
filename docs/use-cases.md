@@ -184,3 +184,32 @@ Allow the user to create an account or securely log into the Smart Tourist Guide
 **Postconditions:**
 - The user is successfully registered or logged in.
 - The user can access the system's features.
+
+## UC-02: Search Destinations
+
+**Primary Actor:** Tourist / User
+
+**Goal:**  
+Allow the user to search for tourist destinations and find relevant places to visit.
+
+**Preconditions:**
+- The system is available.
+- The user has access to the destination search feature.
+
+**Main Flow:**
+1. User opens the Search Destinations feature.
+2. User enters a destination, city, place name, or category.
+3. The system processes the search request.
+4. The system retrieves matching tourist destinations.
+5. The system displays the search results.
+6. User selects a destination from the results.
+7. The system displays relevant information about the selected destination.
+
+**Alternative Flow:**
+- If no matching destination is found, the system displays a suitable message.
+- If the search input is invalid, the system asks the user to enter valid information.
+- If external location services are unavailable, the system informs the user that the search cannot be completed.
+
+**Postconditions:**
+- The user receives a list of relevant destinations.
+- The user can select a destination and view its details.
