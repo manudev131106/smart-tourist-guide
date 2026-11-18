@@ -1,9 +1,9 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <stdexcept>
+#include <iomanip>
 using namespace std;
-
-mutex bookingMutex;
-mutex outputMutex;
-int bookingCount = 0;
 
 class User {
 private:
@@ -113,16 +113,20 @@ enum class TripType {
 
 string tripTypeName(TripType type) {
     switch (type) {
-        case TripType::Budget: return "Budget";
-        case TripType::Standard: return "Standard";
-        case TripType::Luxury: return "Luxury";
+        case TripType::Budget:
+            return "Budget";
+        case TripType::Standard:
+            return "Standard";
+        case TripType::Luxury:
+            return "Luxury";
     }
     return "Unknown";
 }
 
 class InvalidBudget : public invalid_argument {
 public:
-    InvalidBudget() : invalid_argument("Budget cannot be negative") {}
+    InvalidBudget()
+        : invalid_argument("Budget cannot be negative") {}
 };
 
 class BookingError : public exception {
@@ -140,6 +144,7 @@ public:
     TripBudget(double amount) {
         if (amount < 0)
             throw InvalidBudget();
+
         cost = amount;
     }
 
@@ -154,7 +159,8 @@ public:
                                const TripBudget& b);
 };
 
-TripBudget operator+(const TripBudget& a, const TripBudget& b) {
+TripBudget operator+(const TripBudget& a,
+                     const TripBudget& b) {
     return TripBudget(a.cost + b.cost);
 }
 
@@ -214,131 +220,9 @@ public:
     }
 };
 
-void destinationSearch() {
-    {
-        lock_guard<mutex> lock(outputMutex);
-        cout << "\nSearching destinations...\n";
-    }
-
-    this_thread::sleep_for(chrono::seconds(2));
-
-    {
-        lock_guard<mutex> lock(outputMutex);
-        cout << "Goa, Jaipur and Manali found.\n";
-    }
-}
-
-void weatherCheck() {
-    {
-        lock_guard<mutex> lock(outputMutex);
-        cout << "\nChecking weather...\n";
-    }
-
-    this_thread::sleep_for(chrono::seconds(2));
-
-    {
-        lock_guard<mutex> lock(outputMutex);
-        cout << "Weather information retrieved.\n";
-    }
-}
-
-void processBooking() {
-    {
-        lock_guard<mutex> lock(outputMutex);
-        cout << "\nProcessing booking...\n";
-    }
-
-    this_thread::sleep_for(chrono::seconds(1));
-
-    {
-        lock_guard<mutex> lock(bookingMutex);
-        ++bookingCount;
-    }
-
-    {
-        lock_guard<mutex> lock(outputMutex);
-        cout << "Booking completed.\n";
-    }
-}
-
-class TravelThread {
-private:
-    thread t;
-
-public:
-    void run() {
-        {
-            lock_guard<mutex> lock(outputMutex);
-            cout << "\nGenerating travel report...\n";
-        }
-
-        this_thread::sleep_for(chrono::seconds(1));
-
-        {
-            lock_guard<mutex> lock(outputMutex);
-            cout << "Travel report generated.\n";
-        }
-    }
-
-    void start() {
-        t = thread(&TravelThread::run, this);
-    }
-
-    void join() {
-        if (t.joinable())
-            t.join();
-    }
-
-    ~TravelThread() {
-        if (t.joinable())
-            t.join();
-    }
-};
-
-class Runnable {
-public:
-    virtual void run() = 0;
-    virtual ~Runnable() = default;
-};
-
-class BookingTask : public Runnable {
-public:
-    void run() override {
-        {
-            lock_guard<mutex> lock(outputMutex);
-            cout << "\nExecuting booking task...\n";
-        }
-
-        this_thread::sleep_for(chrono::seconds(2));
-
-        {
-            lock_guard<mutex> lock(outputMutex);
-            cout << "Booking task completed.\n";
-        }
-    }
-};
-
-void executeRunnable(Runnable& task) {
-    thread t(&Runnable::run, &task);
-    t.join();
-}
-
-void synchronizedBooking() {
-    lock_guard<mutex> lock(bookingMutex);
-    ++bookingCount;
-
-    int currentCount = bookingCount;
-
-    {
-        lock_guard<mutex> outputLock(outputMutex);
-        cout << "Booking count updated: "
-             << currentCount << '\n';
-    }
-}
-
 int main() {
     try {
-        cout << "TOURIST GUIDE OOP SYSTEM\n";
+        cout << "=== TOURIST GUIDE OOP SYSTEM ===\n";
 
         Tourist tourist("Jagan", "jagan@example.com", "Goa");
         Guide guide("Ravi", "ravi@example.com", "History");
@@ -346,63 +230,63 @@ int main() {
                           "Jaipur", "Adventure");
         Admin admin("Manager", "admin@example.com");
 
-        cout << "\nUsers\n";
+        cout << "\n--- USERS ---\n";
         tourist.display();
         guide.display();
         agent.display();
         admin.display();
 
-        cout << "\nTotal users: "
-             << User::getUserCount() << '\n';
+        cout << "\n--- TOTAL USERS ---\n";
+        cout << User::getUserCount() << '\n';
 
-        cout << "\nRuntime Polymorphism\n";
+        cout << "\n--- RUNTIME POLYMORPHISM ---\n";
         User* ptr = &tourist;
         ptr->display();
 
-        cout << "\nObject Slicing\n";
+        cout << "\n--- OBJECT SLICING ---\n";
         User sliced = tourist;
         sliced.display();
 
-        cout << "\nFunction Overloading\n";
+        cout << "\n--- FUNCTION OVERLOADING ---\n";
         tourist.searchDestination("Goa");
         tourist.searchDestination("Goa", true);
 
-        cout << "\nNested Class\n";
+        cout << "\n--- NESTED CLASS ---\n";
         Tourist::DestinationInfo::show("Goa");
 
-        cout << "\nBasic to Class\n";
+        cout << "\n--- BASIC TO CLASS ---\n";
         TripBudget budget = 15000;
         cout << budget << '\n';
 
-        cout << "\nClass to Basic\n";
+        cout << "\n--- CLASS TO BASIC ---\n";
         double amount = static_cast<double>(budget);
         cout << "Numeric budget: Rs. " << amount << '\n';
 
-        cout << "\nBudget Addition\n";
+        cout << "\n--- BUDGET ADDITION ---\n";
         TripBudget hotel(8000);
         TripBudget total = budget + hotel;
         cout << "Total budget: " << total << '\n';
 
-        cout << "\nClass to Class\n";
+        cout << "\n--- CLASS TO CLASS ---\n";
         BookingRecord booking(total);
         booking.display();
 
-        cout << "\nEnum\n";
+        cout << "\n--- ENUM ---\n";
         cout << tripTypeName(TripType::Luxury) << '\n';
 
-        cout << "\nFunction Template\n";
-        cout << "Greater number: "
-             << findGreater(10, 20) << '\n';
+        cout << "\n--- FUNCTION TEMPLATE ---\n";
+        cout << "Greater number: " << findGreater(10, 20) << '\n';
 
-        cout << "\nClass Template\n";
+        cout << "\n--- CLASS TEMPLATE ---\n";
         TravelPackage<double> package("Goa", 15000.0);
         package.display();
 
-        cout << "\nDestinations\n";
+        cout << "\n--- DESTINATIONS ---\n";
         vector<string> places = {"Goa", "Jaipur", "Manali"};
         showDestinations(places);
 
-        cout << "\nException Handling\n";
+        cout << "\n EXCEPTION HANDLING \n";
+
         Cleanup cleanup;
 
         try {
@@ -423,64 +307,24 @@ int main() {
             invalidBooking.display();
         }
         catch (const BookingError& e) {
-            cout << "Booking exception: "
+            cout << "Derived-class booking exception: "
                  << e.what() << '\n';
         }
         catch (const exception& e) {
             cout << "Base-class exception: "
-                 << e.what() << '\n';
+                 << e.what() << '\n'; 
         }
 
-        cout << "\nThrow and Catch\n";
+        cout << "\n THROW AND CATCH \n";
         try {
             throw runtime_error("Destination service unavailable");
         }
+         
         catch (const exception& e) {
             cout << e.what() << '\n';
         }
 
-        cout << "\nMultithreading\n";
-        thread t1(destinationSearch);
-        thread t2(weatherCheck);
-        thread t3(processBooking);
-
-        cout << "\nMain thread yielding execution...\n";
-        this_thread::yield();
-
-        t1.join();
-        t2.join();
-        t3.join();
-
-        cout << "\nAll destination operations completed.\n";
-
-        cout << "\nCustom Thread Class\n";
-        TravelThread travelThread;
-        travelThread.start();
-        travelThread.join();
-
-        cout << "\nRunnable Interface\n";
-        BookingTask task;
-        executeRunnable(task);
-
-        cout << "\nThread Sleep\n";
-        cout << "Waiting for 2 seconds...\n";
-        this_thread::sleep_for(chrono::seconds(2));
-        cout << "Waiting completed.\n";
-
-        cout << "\nThread Synchronization\n";
-        thread t4(synchronizedBooking);
-        thread t5(synchronizedBooking);
-
-        t4.join();
-        t5.join();
-
-        cout << "\nFinal booking count: ";
-        {
-            lock_guard<mutex> lock(bookingMutex);
-            cout << bookingCount << '\n';
-        }
-
-        cout << "\nProgram completed.\n";
+        cout << "\n PROGRAM COMPLETED \n";
     }
     catch (const exception& e) {
         cout << "Main error handler: " << e.what() << '\n';
