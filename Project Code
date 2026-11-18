@@ -1,0 +1,490 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+mutex bookingMutex;
+mutex outputMutex;
+int bookingCount = 0;
+
+class User {
+private:
+    string name, email;
+    static int userCount;
+
+public:
+    User(string n, string e) {
+        name = n;
+        email = e;
+        ++userCount;
+    }
+
+    virtual void display() const {
+        cout << "Name: " << name << "\nEmail: " << email << '\n';
+    }
+
+    string getName() const {
+        return name;
+    }
+
+    static int getUserCount() {
+        return userCount;
+    }
+
+    virtual ~User() = default;
+};
+
+int User::userCount = 0;
+
+class Tourist : virtual public User {
+private:
+    string destination;
+
+public:
+    class DestinationInfo {
+    public:
+        static void show(string place) {
+            cout << "Destination information: " << place << '\n';
+        }
+    };
+
+    Tourist(string n, string e, string d)
+        : User(n, e), destination(d) {}
+
+    string getDestination() const {
+        return destination;
+    }
+
+    void searchDestination(string place) const {
+        cout << "Searching: " << place << '\n';
+    }
+
+    void searchDestination(string place, bool weather) const {
+        cout << "Searching: " << place;
+        if (weather)
+            cout << " with weather information";
+        cout << '\n';
+    }
+
+    void display() const override {
+        cout << "Tourist: " << getName()
+             << "\nDestination: " << destination << '\n';
+    }
+};
+
+class Guide : virtual public User {
+private:
+    string specialization;
+
+public:
+    Guide(string n, string e, string s)
+        : User(n, e), specialization(s) {}
+
+    void display() const override {
+        cout << "Guide: " << getName()
+             << "\nSpecialization: " << specialization << '\n';
+    }
+};
+
+class TravelAgent : public Tourist, public Guide {
+public:
+    TravelAgent(string n, string e, string d, string s)
+        : User(n, e), Tourist(n, e, d), Guide(n, e, s) {}
+
+    void display() const override {
+        cout << "Travel Agent: " << getName()
+             << "\nDestination service: " << getDestination()
+             << "\nGuide service: Available\n";
+    }
+};
+
+class Admin final : public User {
+public:
+    Admin(string n, string e) : User(n, e) {}
+
+    void display() const override {
+        cout << "Admin: " << getName() << '\n';
+    }
+};
+
+enum class TripType {
+    Budget,
+    Standard,
+    Luxury
+};
+
+string tripTypeName(TripType type) {
+    switch (type) {
+        case TripType::Budget: return "Budget";
+        case TripType::Standard: return "Standard";
+        case TripType::Luxury: return "Luxury";
+    }
+    return "Unknown";
+}
+
+class InvalidBudget : public invalid_argument {
+public:
+    InvalidBudget() : invalid_argument("Budget cannot be negative") {}
+};
+
+class BookingError : public exception {
+public:
+    const char* what() const noexcept override {
+        return "Booking failed";
+    }
+};
+
+class TripBudget {
+private:
+    double cost;
+
+public:
+    TripBudget(double amount) {
+        if (amount < 0)
+            throw InvalidBudget();
+        cost = amount;
+    }
+
+    operator double() const {
+        return cost;
+    }
+
+    friend TripBudget operator+(const TripBudget& a,
+                                const TripBudget& b);
+
+    friend ostream& operator<<(ostream& out,
+                               const TripBudget& b);
+};
+
+TripBudget operator+(const TripBudget& a, const TripBudget& b) {
+    return TripBudget(a.cost + b.cost);
+}
+
+ostream& operator<<(ostream& out, const TripBudget& b) {
+    out << "Rs. " << fixed << setprecision(2) << b.cost;
+    return out;
+}
+
+class BookingRecord {
+private:
+    double bookingAmount;
+
+public:
+    BookingRecord(const TripBudget& budget)
+        : bookingAmount(static_cast<double>(budget)) {
+        if (bookingAmount <= 0)
+            throw BookingError();
+    }
+
+    void display() const {
+        cout << "Booking amount: Rs. "
+             << fixed << setprecision(2)
+             << bookingAmount << '\n';
+    }
+};
+
+template <typename T>
+T findGreater(T a, T b) {
+    return (a > b) ? a : b;
+}
+
+template <typename T>
+class TravelPackage {
+private:
+    string destination;
+    T price;
+
+public:
+    TravelPackage(string d, T p)
+        : destination(d), price(p) {}
+
+    void display() const {
+        cout << "Package: " << destination
+             << " | Price: " << price << '\n';
+    }
+};
+
+void showDestinations(const vector<string>& places) {
+    for (size_t i = 0; i < places.size(); ++i)
+        cout << i + 1 << ". " << places[i] << '\n';
+}
+
+class Cleanup {
+public:
+    ~Cleanup() {
+        cout << "Cleanup completed\n";
+    }
+};
+
+void destinationSearch() {
+    {
+        lock_guard<mutex> lock(outputMutex);
+        cout << "\nSearching destinations...\n";
+    }
+
+    this_thread::sleep_for(chrono::seconds(2));
+
+    {
+        lock_guard<mutex> lock(outputMutex);
+        cout << "Goa, Jaipur and Manali found.\n";
+    }
+}
+
+void weatherCheck() {
+    {
+        lock_guard<mutex> lock(outputMutex);
+        cout << "\nChecking weather...\n";
+    }
+
+    this_thread::sleep_for(chrono::seconds(2));
+
+    {
+        lock_guard<mutex> lock(outputMutex);
+        cout << "Weather information retrieved.\n";
+    }
+}
+
+void processBooking() {
+    {
+        lock_guard<mutex> lock(outputMutex);
+        cout << "\nProcessing booking...\n";
+    }
+
+    this_thread::sleep_for(chrono::seconds(1));
+
+    {
+        lock_guard<mutex> lock(bookingMutex);
+        ++bookingCount;
+    }
+
+    {
+        lock_guard<mutex> lock(outputMutex);
+        cout << "Booking completed.\n";
+    }
+}
+
+class TravelThread {
+private:
+    thread t;
+
+public:
+    void run() {
+        {
+            lock_guard<mutex> lock(outputMutex);
+            cout << "\nGenerating travel report...\n";
+        }
+
+        this_thread::sleep_for(chrono::seconds(1));
+
+        {
+            lock_guard<mutex> lock(outputMutex);
+            cout << "Travel report generated.\n";
+        }
+    }
+
+    void start() {
+        t = thread(&TravelThread::run, this);
+    }
+
+    void join() {
+        if (t.joinable())
+            t.join();
+    }
+
+    ~TravelThread() {
+        if (t.joinable())
+            t.join();
+    }
+};
+
+class Runnable {
+public:
+    virtual void run() = 0;
+    virtual ~Runnable() = default;
+};
+
+class BookingTask : public Runnable {
+public:
+    void run() override {
+        {
+            lock_guard<mutex> lock(outputMutex);
+            cout << "\nExecuting booking task...\n";
+        }
+
+        this_thread::sleep_for(chrono::seconds(2));
+
+        {
+            lock_guard<mutex> lock(outputMutex);
+            cout << "Booking task completed.\n";
+        }
+    }
+};
+
+void executeRunnable(Runnable& task) {
+    thread t(&Runnable::run, &task);
+    t.join();
+}
+
+void synchronizedBooking() {
+    lock_guard<mutex> lock(bookingMutex);
+    ++bookingCount;
+
+    int currentCount = bookingCount;
+
+    {
+        lock_guard<mutex> outputLock(outputMutex);
+        cout << "Booking count updated: "
+             << currentCount << '\n';
+    }
+}
+
+int main() {
+    try {
+        cout << "TOURIST GUIDE OOP SYSTEM\n";
+
+        Tourist tourist("Jagan", "jagan@example.com", "Goa");
+        Guide guide("Ravi", "ravi@example.com", "History");
+        TravelAgent agent("Arun", "arun@example.com",
+                          "Jaipur", "Adventure");
+        Admin admin("Manager", "admin@example.com");
+
+        cout << "\nUsers\n";
+        tourist.display();
+        guide.display();
+        agent.display();
+        admin.display();
+
+        cout << "\nTotal users: "
+             << User::getUserCount() << '\n';
+
+        cout << "\nRuntime Polymorphism\n";
+        User* ptr = &tourist;
+        ptr->display();
+
+        cout << "\nObject Slicing\n";
+        User sliced = tourist;
+        sliced.display();
+
+        cout << "\nFunction Overloading\n";
+        tourist.searchDestination("Goa");
+        tourist.searchDestination("Goa", true);
+
+        cout << "\nNested Class\n";
+        Tourist::DestinationInfo::show("Goa");
+
+        cout << "\nBasic to Class\n";
+        TripBudget budget = 15000;
+        cout << budget << '\n';
+
+        cout << "\nClass to Basic\n";
+        double amount = static_cast<double>(budget);
+        cout << "Numeric budget: Rs. " << amount << '\n';
+
+        cout << "\nBudget Addition\n";
+        TripBudget hotel(8000);
+        TripBudget total = budget + hotel;
+        cout << "Total budget: " << total << '\n';
+
+        cout << "\nClass to Class\n";
+        BookingRecord booking(total);
+        booking.display();
+
+        cout << "\nEnum\n";
+        cout << tripTypeName(TripType::Luxury) << '\n';
+
+        cout << "\nFunction Template\n";
+        cout << "Greater number: "
+             << findGreater(10, 20) << '\n';
+
+        cout << "\nClass Template\n";
+        TravelPackage<double> package("Goa", 15000.0);
+        package.display();
+
+        cout << "\nDestinations\n";
+        vector<string> places = {"Goa", "Jaipur", "Manali"};
+        showDestinations(places);
+
+        cout << "\nException Handling\n";
+        Cleanup cleanup;
+
+        try {
+            TripBudget invalidBudget(-500);
+            cout << invalidBudget << '\n';
+        }
+        catch (const InvalidBudget& e) {
+            cout << "User-defined exception: "
+                 << e.what() << '\n';
+        }
+        catch (const invalid_argument& e) {
+            cout << "Base-class exception: "
+                 << e.what() << '\n';
+        }
+
+        try {
+            BookingRecord invalidBooking(TripBudget(0));
+            invalidBooking.display();
+        }
+        catch (const BookingError& e) {
+            cout << "Booking exception: "
+                 << e.what() << '\n';
+        }
+        catch (const exception& e) {
+            cout << "Base-class exception: "
+                 << e.what() << '\n';
+        }
+
+        cout << "\nThrow and Catch\n";
+        try {
+            throw runtime_error("Destination service unavailable");
+        }
+        catch (const exception& e) {
+            cout << e.what() << '\n';
+        }
+
+        cout << "\nMultithreading\n";
+        thread t1(destinationSearch);
+        thread t2(weatherCheck);
+        thread t3(processBooking);
+
+        cout << "\nMain thread yielding execution...\n";
+        this_thread::yield();
+
+        t1.join();
+        t2.join();
+        t3.join();
+
+        cout << "\nAll destination operations completed.\n";
+
+        cout << "\nCustom Thread Class\n";
+        TravelThread travelThread;
+        travelThread.start();
+        travelThread.join();
+
+        cout << "\nRunnable Interface\n";
+        BookingTask task;
+        executeRunnable(task);
+
+        cout << "\nThread Sleep\n";
+        cout << "Waiting for 2 seconds...\n";
+        this_thread::sleep_for(chrono::seconds(2));
+        cout << "Waiting completed.\n";
+
+        cout << "\nThread Synchronization\n";
+        thread t4(synchronizedBooking);
+        thread t5(synchronizedBooking);
+
+        t4.join();
+        t5.join();
+
+        cout << "\nFinal booking count: ";
+        {
+            lock_guard<mutex> lock(bookingMutex);
+            cout << bookingCount << '\n';
+        }
+
+        cout << "\nProgram completed.\n";
+    }
+    catch (const exception& e) {
+        cout << "Main error handler: " << e.what() << '\n';
+    }
+
+    return 0;
+}
